@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        
+        <div class="qr-type-selector">
+            <label for="qr-type">Select QR Code Type:</label>
+            <select id="qr-type">
+                <option value="wifi">Wi-Fi Credentials</option>
+                <option value="url">URL</option>
+                <option value="phone">Phone Number</option>
+                <option value="email">Email Address</option>
+                <option value="sms">SMS</option>
+                <option value="contact">Contact Information</option>
+                <option value="image">Image URL</option>
+                <option value="text">Plain Text</option>
+            </select>
+        </div>
+        
+        <div class="form-container">
+            <!-- Wi-Fi Form -->
+            <div id="wifi-form" class="form-section">
+                <h2>Wi-Fi Credentials</h2>
+                <div class="form-group">
+                    <label for="wifi-ssid">SSID (Network Name):</label>
+                    <input type="text" id="wifi-ssid" required>
+                </div>
+                <div class="form-group">
+                    <label for="wifi-auth">Authentication:</label>
+                    <select id="wifi-auth">
+                        <option value="WPA">WPA</option>
+                        <option value="WEP">WEP</option>
+                        <option value="NONE">None</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="wifi-password">Password:</label>
+                    <input type="password" id="wifi-password">
+                </div>
+                <div class="form-group">
+                    <label for="wifi-hidden">Hidden SSID:</label>
+                    <input type="checkbox" id="wifi-hidden">
+                </div>
+            </div>
+            
+            <!-- URL Form -->
+            <div id="url-form" class="form-section" style="display: none;">
+                <h2>URL</h2>
+                <div class="form-group">
+                    <label for="url-input">Enter URL:</label>
+                    <input type="url" id="url-input" placeholder="https://example.com" required>
+                </div>
+            </div>
+            
+            <!-- Phone Form -->
+            <div id="phone-form" class="form-section" style="display: none;">
+                <h2>Phone Number</h2>
+                <div class="form-group">
+                    <label for="phone-input">Enter Phone Number:</label>
+                    <input type="tel" id="phone-input" placeholder="+1234567890" required>
+                </div>
+            </div>
+            
+            <!-- Email Form -->
+            <div id="email-form" class="form-section" style="display: none;">
+                <h2>Email Address</h2>
+                <div class="form-group">
+                    <label for="email-address">Email Address:</label>
+                    <input type="email" id="email-address" required>
+                </div>
+                <div class="form-group">
+                    <label for="email-subject">Subject (optional):</label>
+                    <input type="text" id="email-subject">
+                </div>
+                <div class="form-group">
+                    <label for="email-body">Message (optional):</label>
+                    <textarea id="email-body"></textarea>
+                </div>
+            </div>
+            
+            <!-- SMS Form -->
+            <div id="sms-form" class="form-section" style="display: none;">
+                <h2>SMS</h2>
+                <div class="form-group">
+                    <label for="sms-phone">Phone Number:</label>
+                    <input type="tel" id="sms-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="sms-message">Message (optional):</label>
+                    <textarea id="sms-message"></textarea>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div id="contact-form" class="form-section" style="display: none;">
+                <h2>Contact Information</h2>
+                <div class="form-group">
+                    <label for="contact-name">Full Name:</label>
+                    <input type="text" id="contact-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">Phone Number (optional):</label>
+                    <input type="tel" id="contact-phone">
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Email Address (optional):</label>
+                    <input type="email" id="contact-email">
+                </div>
+                <div class="form-group">
+                    <label for="contact-org">Organization (optional):</label>
+                    <input type="text" id="contact-org">
+                </div>
+            </div>
+            
+            <!-- Image Form -->
+            <div id="image-form" class="form-section" style="display: none;">
+                <h2>Image URL</h2>
+                <div class="form-group">
+                    <label for="image-url">Image URL:</label>
+                    <input type="url" id="image-url" placeholder="https://example.com/image.jpg" required>
+                </div>
+                <div class="form-group">
+                    <label for="image-alt">Alternative Text (optional):</label>
+                    <input type="text" id="image-alt" placeholder="Description of the image">
+                </div>
+            </div>
+            
+            <!-- Text Form -->
+            <div id="text-form" class="form-section" style="display: none;">
+                <h2>Plain Text</h2>
+                <div class="form-group">
+                    <label for="text-input">Enter Text:</label>
+                    <textarea id="text-input" required></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <button id="generate-btn" class="generate-btn">Generate QR Code</button>
+        
+        <div class="qr-result" style="display: none;">
+            <h2>Your QR Code</h2>
+            <div id="qr-code"></div>
+            <button id="download-btn" class="download-btn">Download QR Code</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
