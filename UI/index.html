@@ -11,7 +11,33 @@
     <div class="container">
         <h1>QR Code Generator</h1>
         
-        <div class="qr-type-selector">
+        <div id="login-form-container">
+            <div class="login-form">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button id="login-btn" class="login-btn">Login</button>
+            </div>
+        </div>
+        
+        <div id="user-info" style="display: none; margin-bottom: 20px;">
+            <div class="user-avatar">
+                <span id="user-initial"></span>
+            </div>
+            <div class="user-details">
+                <p>Welcome back!</p>
+                <p id="user-email"></p>
+            </div>
+        </div>
+        
+        <div id="qr-tools" style="display: none;">
+            <div class="qr-type-selector">
             <label for="qr-type">Select QR Code Type:</label>
             <select id="qr-type">
                 <option value="wifi">Wi-Fi Credentials</option>
@@ -150,6 +176,7 @@
             <div id="qr-code"></div>
             <button id="download-btn" class="download-btn">Download QR Code</button>
         </div>
+    </div>
     </div>
     
     <script src="script.js"></script>
