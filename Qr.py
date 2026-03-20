@@ -9,12 +9,14 @@ Universal QR Code generator supporting multiple data types:
 - Text messages
 - Contact information
 - Requires: pip install qrcode qrcode_terminal
-- Run: python qr_generator.py
+- Interactive: python qr_generator.py
+- Command-line: python qr_generator.py --type wifi --ssid "MyNetwork" --password "mypass"
 """
 
 import qrcode
 import qrcode_terminal
 import re
+import argparse
 from PIL import Image
 
 def escape_val(s: str) -> str:
@@ -42,37 +44,116 @@ def build_wifi_string(ssid: str, auth: str, password: str, hidden: bool) -> str:
     return wifi
 
 def main():
-    print("=" * 50)
-    print("Universal QR Code Generator")
-    print("=" * 50)
-    print("\nSelect QR Code Type:")
-    print("1. Wi-Fi Credentials")
-    print("2. URL (Website, Facebook, Instagram, etc.)")
-    print("3. Phone Number")
-    print("4. Email Address")
-    print("5. SMS (Text Message)")
-    print("6. Contact Information (vCard)")
-    print("7. Plain Text")
-    
-    choice = input("\nEnter your choice (1-7): ").strip()
-    
-    if choice == "1":
-        generate_wifi_qr()
-    elif choice == "2":
-        generate_url_qr()
-    elif choice == "3":
-        generate_phone_qr()
-    elif choice == "4":
-        generate_email_qr()
-    elif choice == "5":
-        generate_sms_qr()
-    elif choice == "6":
-        generate_contact_qr()
-    elif choice == "7":
-        generate_text_qr()
+    parser = argparse.ArgumentParser(description="Universal QR Code Generator")
+    parser.add_argument('--type', choices=['wifi', 'url', 'phone', 'email', 'sms', 'contact', 'text'],
+                       help='Type of QR code to generate')
+    parser.add_argument('--ssid', help='Wi-Fi network name')
+    parser.add_argument('--auth', choices=['WPA', 'WEP', 'NONE'], default='WPA', help='Wi-Fi authentication type')
+    parser.add_argument('--password', help='Wi-Fi password')
+    parser.add_argument('--hidden', action='store_true', help='Hidden Wi-Fi network')
+    parser.add_argument('--url', help='URL for QR code')
+    parser.add_argument('--phone', help='Phone number')
+    parser.add_argument('--email', help='Email address')
+    parser.add_argument('--subject', help='Email subject')
+    parser.add_argument('--body', help='Email body')
+    parser.add_argument('--sms-phone', help='SMS phone number')
+    parser.add_argument('--message', help='SMS message')
+    parser.add_argument('--name', help='Contact name')
+    parser.add_argument('--contact-phone', help='Contact phone')
+    parser.add_argument('--contact-email', help='Contact email')
+    parser.add_argument('--org', help='Contact organization')
+    parser.add_argument('--text', help='Plain text')
+    parser.add_argument('--output', help='Output filename (without extension)')
+
+    args = parser.parse_args()
+
+    if args.type:
+        # Command-line mode
+        if args.type == 'wifi':
+            if not args.ssid:
+                print("Error: --ssid is required for Wi-Fi")
+                return
+            wifi_string = build_wifi_string(args.ssid, args.auth, args.password or "", args.hidden)
+            generate_and_save_qr(wifi_string, args.output or "wifi_qr")
+        elif args.type == 'url':
+            if not args.url:
+                print("Error: --url is required")
+                return
+            generate_and_save_qr(args.url, args.output or "url_qr")
+        elif args.type == 'phone':
+            if not args.phone:
+                print("Error: --phone is required")
+                return
+            generate_and_save_qr(f"tel:{args.phone}", args.output or "phone_qr")
+        elif args.type == 'email':
+            if not args.email:
+                print("Error: --email is required")
+                return
+            email_data = f"mailto:{args.email}"
+            if args.subject:
+                email_data += f"?subject={args.subject}"
+            if args.body:
+                email_data += f"&body={args.body}"
+            generate_and_save_qr(email_data, args.output or "email_qr")
+        elif args.type == 'sms':
+            if not args.sms_phone:
+                print("Error: --sms-phone is required")
+                return
+            sms_data = f"smsto:{args.sms_phone}"
+            if args.message:
+                sms_data += f":{args.message}"
+            generate_and_save_qr(sms_data, args.output or "sms_qr")
+        elif args.type == 'contact':
+            if not args.name:
+                print("Error: --name is required for contact")
+                return
+            vcard = f"BEGIN:VCARD\nVERSION:3.0\nFN:{args.name}\n"
+            if args.contact_phone:
+                vcard += f"TEL:{args.contact_phone}\n"
+            if args.contact_email:
+                vcard += f"EMAIL:{args.contact_email}\n"
+            if args.org:
+                vcard += f"ORG:{args.org}\n"
+            vcard += "END:VCARD"
+            generate_and_save_qr(vcard, args.output or "contact_qr")
+        elif args.type == 'text':
+            if not args.text:
+                print("Error: --text is required")
+                return
+            generate_and_save_qr(args.text, args.output or "text_qr")
     else:
-        print("Invalid choice. Please try again.")
-        main()
+        # Interactive mode
+        print("=" * 50)
+        print("Universal QR Code Generator")
+        print("=" * 50)
+        print("\nSelect QR Code Type:")
+        print("1. Wi-Fi Credentials")
+        print("2. URL (Website, Facebook, Instagram, etc.)")
+        print("3. Phone Number")
+        print("4. Email Address")
+        print("5. SMS (Text Message)")
+        print("6. Contact Information (vCard)")
+        print("7. Plain Text")
+        
+        choice = input("\nEnter your choice (1-7): ").strip()
+        
+        if choice == "1":
+            generate_wifi_qr()
+        elif choice == "2":
+            generate_url_qr()
+        elif choice == "3":
+            generate_phone_qr()
+        elif choice == "4":
+            generate_email_qr()
+        elif choice == "5":
+            generate_sms_qr()
+        elif choice == "6":
+            generate_contact_qr()
+        elif choice == "7":
+            generate_text_qr()
+        else:
+            print("Invalid choice. Please try again.")
+            main()
 
 def generate_wifi_qr():
     print("\n--- Wi-Fi QR Code Generator ---")
