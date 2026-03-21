@@ -91,9 +91,24 @@ python Qr.py --type text --text "Hello World"
 ```
 QR_Code_Generater/
 ├── Qr.py              # Main Python script
-├── UI/                # Web interface
+├── docs/              # Web interface (for GitHub Pages)
 │   ├── index.html     # Main web page
 │   ├── script.js      # JavaScript functionality
 │   └── styles.css     # Styling
 └── README.md          # This file
 ```
+
+## Host on GitHub (GitHub Pages)
+
+To host your QR Code Generator UI online:
+
+1. Push this project to a GitHub repository
+2. Go to **Settings** → **Pages** (in your repo)
+3. Under **Build and deployment**:
+   - Source: Select **Deploy from a branch**
+   - Branch: Select **main** (or master) and folder: **/(root)**
+   - Click **Save**
+4. Wait 1-2 minutes, then your site will be available at:
+   `https://yourusername.github.io/repository-name`
+
+**Note:** The `docs` folder contains the web interface files for GitHub Pages.
