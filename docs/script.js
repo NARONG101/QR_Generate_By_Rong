@@ -1,357 +1,254 @@
-// QR Code Generator JavaScript
+// QR Studio — behavior
 
-// DOM Elements
-const qrTypeSelect = document.getElementById('qr-type');
-const generateBtn = document.getElementById('generate-btn');
-const downloadBtn = document.getElementById('download-btn');
-const qrResult = document.querySelector('.qr-result');
+const tabs = Array.from(document.querySelectorAll('.type-tab'));
+const sections = Array.from(document.querySelectorAll('.form-section'));
+const form = document.getElementById('qr-form');
 const qrCodeContainer = document.getElementById('qr-code');
+const qrCaption = document.getElementById('qr-caption');
+const resultActions = document.getElementById('result-actions');
+const downloadBtn = document.getElementById('download-btn');
+const copyBtn = document.getElementById('copy-btn');
+const wifiAuth = document.getElementById('wifi-auth');
+const wifiPasswordField = document.getElementById('wifi-password-field');
 
-// Form sections
-const wifiForm = document.getElementById('wifi-form');
-const urlForm = document.getElementById('url-form');
-const phoneForm = document.getElementById('phone-form');
-const emailForm = document.getElementById('email-form');
-const smsForm = document.getElementById('sms-form');
-const contactForm = document.getElementById('contact-form');
-const imageForm = document.getElementById('image-form');
-const textForm = document.getElementById('text-form');
+let activeType = 'wifi';
+let currentCanvas = null;
+let currentData = null;
 
-// Current QR code data
-let currentQrData = null;
-let currentQrImage = null;
-
-// Show the appropriate form based on QR type selection
-qrTypeSelect.addEventListener('change', function() {
-    const selectedType = qrTypeSelect.value;
-    
-    // Hide all forms
-    wifiForm.style.display = 'none';
-    urlForm.style.display = 'none';
-    phoneForm.style.display = 'none';
-    emailForm.style.display = 'none';
-    smsForm.style.display = 'none';
-    contactForm.style.display = 'none';
-    imageForm.style.display = 'none';
-    textForm.style.display = 'none';
-    
-    // Show the selected form
-    if (selectedType === 'wifi') {
-        wifiForm.style.display = 'block';
-    } else if (selectedType === 'url') {
-        urlForm.style.display = 'block';
-    } else if (selectedType === 'phone') {
-        phoneForm.style.display = 'block';
-    } else if (selectedType === 'email') {
-        emailForm.style.display = 'block';
-    } else if (selectedType === 'sms') {
-        smsForm.style.display = 'block';
-    } else if (selectedType === 'contact') {
-        contactForm.style.display = 'block';
-    } else if (selectedType === 'image') {
-        imageForm.style.display = 'block';
-    } else if (selectedType === 'text') {
-        textForm.style.display = 'block';
-    }
+/* ---------- Tab switching ---------- */
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => setActiveType(tab.dataset.type));
 });
 
-// Setup image form radio buttons
-function setupImageForm() {
-    const radioButtons = document.querySelectorAll('input[name="image-source"]');
-    const urlSection = document.getElementById('image-url-section');
-    const uploadSection = document.getElementById('image-upload-section');
-    
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'url') {
-                urlSection.style.display = 'block';
-                uploadSection.style.display = 'none';
-            } else if (this.value === 'upload') {
-                urlSection.style.display = 'none';
-                uploadSection.style.display = 'block';
-            }
-        });
-    });
-    
-    // Initialize
-    if (document.querySelector('input[name="image-source"]:checked').value === 'url') {
-        urlSection.style.display = 'block';
-        uploadSection.style.display = 'none';
-    }
+function setActiveType(type) {
+  activeType = type;
+  tabs.forEach(t => {
+    const active = t.dataset.type === type;
+    t.classList.toggle('is-active', active);
+    t.setAttribute('aria-selected', String(active));
+  });
+  sections.forEach(s => {
+    const active = s.dataset.section === type;
+    s.classList.toggle('is-active', active);
+    s.hidden = !active;
+  });
+  clearErrors();
 }
 
-// Generate QR Code button click handler
-generateBtn.addEventListener('click', generateQRCode);
+/* ---------- Wi-Fi: hide password field for open networks ---------- */
+wifiAuth.addEventListener('change', () => {
+  const isOpen = wifiAuth.value === 'NONE';
+  wifiPasswordField.style.display = isOpen ? 'none' : 'block';
+});
 
-// Download QR Code button click handler
-downloadBtn.addEventListener('click', downloadQRCode);
-
-// Function to generate QR code based on form data
-function generateQRCode() {
-    const qrType = qrTypeSelect.value;
-    let qrData = '';
-    
-    try {
-        if (qrType === 'wifi') {
-            qrData = generateWifiQRData();
-        } else if (qrType === 'url') {
-            qrData = generateUrlQRData();
-        } else if (qrType === 'phone') {
-            qrData = generatePhoneQRData();
-        } else if (qrType === 'email') {
-            qrData = generateEmailQRData();
-        } else if (qrType === 'sms') {
-            qrData = generateSmsQRData();
-        } else if (qrType === 'contact') {
-            qrData = generateContactQRData();
-        } else if (qrType === 'image') {
-            qrData = generateImageQRData();
-        } else if (qrType === 'text') {
-            qrData = generateTextQRData();
-        }
-        
-        if (!qrData) {
-            throw new Error('Invalid input data');
-        }
-        
-        // Store the QR data
-        currentQrData = qrData;
-        
-        // Generate and display the QR code
-        displayQRCode(qrData);
-        
-    } catch (error) {
-        alert('Error generating QR code: ' + error.message);
-        console.error('QR Generation Error:', error);
-    }
+/* ---------- Validation helpers ---------- */
+function setError(fieldId, message) {
+  const input = document.getElementById(fieldId);
+  const errorEl = document.getElementById('err-' + fieldId);
+  if (input) input.classList.add('is-invalid');
+  if (errorEl) errorEl.textContent = message;
 }
 
-// Function to generate Wi-Fi QR data
-function generateWifiQRData() {
+function clearErrors() {
+  document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+  document.querySelectorAll('.field__error').forEach(el => (el.textContent = ''));
+}
+
+function focusFirstInvalid() {
+  const el = document.querySelector('.is-invalid');
+  if (el) el.focus();
+}
+
+/* ---------- Escaping for the WIFI: payload ---------- */
+function escapeWifiValue(s) {
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/:/g, '\\:')
+    .replace(/"/g, '\\"');
+}
+
+function cleanPhone(raw) {
+  return raw.replace(/[^\d+\-() ]/g, '').trim();
+}
+
+/* ---------- Per-type builders. Each returns { data, caption } or null (and sets its own errors) ---------- */
+const builders = {
+  wifi() {
     const ssid = document.getElementById('wifi-ssid').value.trim();
-    const auth = document.getElementById('wifi-auth').value;
+    const auth = wifiAuth.value;
     const password = document.getElementById('wifi-password').value;
     const hidden = document.getElementById('wifi-hidden').checked;
-    
-    if (!ssid) {
-        throw new Error('SSID is required');
-    }
-    
-    // Escape special characters
-    const escapeVal = (s) => {
-        return s.replace(/\\/g, '\\\\')
-                .replace(/;/g, '\\;')
-                .replace(/,/g, '\\,')
-                .replace(/:/g, '\\:')
-                .replace(/"/g, '\\"');
-    };
-    
-    const ssidEscaped = escapeVal(ssid);
-    const passwordEscaped = escapeVal(password);
-    
-    let authField = auth.toUpperCase();
-    if (authField === 'NONE') {
-        authField = 'nopass';
-        return `WIFI:T:${authField};S:${ssidEscaped};H:${hidden};;`;
-    } else {
-        return `WIFI:T:${authField};S:${ssidEscaped};P:${passwordEscaped};H:${hidden};;`;
-    }
-}
+    let ok = true;
 
-// Function to generate URL QR data
-function generateUrlQRData() {
+    if (!ssid) { setError('wifi-ssid', 'Enter the network name.'); ok = false; }
+    if (auth !== 'NONE' && !password) { setError('wifi-password', 'Enter the password, or set security to Open.'); ok = false; }
+    if (!ok) return null;
+
+    const ssidEsc = escapeWifiValue(ssid);
+    const data = auth === 'NONE'
+      ? `WIFI:T:nopass;S:${ssidEsc};H:${hidden};;`
+      : `WIFI:T:${auth};S:${ssidEsc};P:${escapeWifiValue(password)};H:${hidden};;`;
+
+    return { data, caption: `Wi‑Fi · ${ssid}` };
+  },
+
+  url() {
     let url = document.getElementById('url-input').value.trim();
-    
-    if (!url) {
-        throw new Error('URL is required');
-    }
-    
-    // Add https:// if no protocol is specified
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
-    }
-    
-    return url;
-}
+    if (!url) { setError('url-input', 'Enter a URL.'); return null; }
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); } catch { setError('url-input', "That doesn't look like a valid URL."); return null; }
+    return { data: url, caption: url };
+  },
 
-// Function to generate Phone QR data
-function generatePhoneQRData() {
-    const phone = document.getElementById('phone-input').value.trim();
-    
-    if (!phone) {
-        throw new Error('Phone number is required');
-    }
-    
-    // Clean phone number
-    const phoneClean = phone.replace(/[^\d+\-()]/g, '');
-    
-    return `tel:${phoneClean}`;
-}
+  phone() {
+    const raw = document.getElementById('phone-input').value.trim();
+    if (!raw) { setError('phone-input', 'Enter a phone number.'); return null; }
+    const phone = cleanPhone(raw);
+    if (!/\d{3,}/.test(phone)) { setError('phone-input', 'Enter a valid phone number.'); return null; }
+    return { data: `tel:${phone}`, caption: `Call · ${phone}` };
+  },
 
-// Function to generate Email QR data
-function generateEmailQRData() {
+  email() {
     const email = document.getElementById('email-address').value.trim();
     const subject = document.getElementById('email-subject').value.trim();
     const body = document.getElementById('email-body').value.trim();
-    
-    if (!email || !email.includes('@')) {
-        throw new Error('Valid email address is required');
-    }
-    
-    let emailData = `mailto:${email}`;
-    
-    if (subject) {
-        emailData += `?subject=${encodeURIComponent(subject)}`;
-        if (body) {
-            emailData += `&body=${encodeURIComponent(body)}`;
-        }
-    } else if (body) {
-        emailData += `?body=${encodeURIComponent(body)}`;
-    }
-    
-    return emailData;
-}
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('email-address', 'Enter a valid email address.'); return null; }
 
-// Function to generate SMS QR data
-function generateSmsQRData() {
-    const phone = document.getElementById('sms-phone').value.trim();
+    const params = [];
+    if (subject) params.push('subject=' + encodeURIComponent(subject));
+    if (body) params.push('body=' + encodeURIComponent(body));
+    const data = `mailto:${email}` + (params.length ? '?' + params.join('&') : '');
+    return { data, caption: `Email · ${email}` };
+  },
+
+  sms() {
+    const raw = document.getElementById('sms-phone').value.trim();
     const message = document.getElementById('sms-message').value.trim();
-    
-    if (!phone) {
-        throw new Error('Phone number is required');
-    }
-    
-    // Clean phone number
-    const phoneClean = phone.replace(/[^\d+\-()]/g, '');
-    
-    if (message) {
-        return `smsto:${phoneClean}:${encodeURIComponent(message)}`;
-    } else {
-        return `smsto:${phoneClean}`;
-    }
-}
+    if (!raw) { setError('sms-phone', 'Enter a phone number.'); return null; }
+    const phone = cleanPhone(raw);
+    if (!/\d{3,}/.test(phone)) { setError('sms-phone', 'Enter a valid phone number.'); return null; }
+    const data = message ? `smsto:${phone}:${message}` : `smsto:${phone}`;
+    return { data, caption: `Text · ${phone}` };
+  },
 
-// Function to generate Contact QR data
-function generateContactQRData() {
+  contact() {
     const name = document.getElementById('contact-name').value.trim();
     const phone = document.getElementById('contact-phone').value.trim();
     const email = document.getElementById('contact-email').value.trim();
-    const organization = document.getElementById('contact-org').value.trim();
-    
-    if (!name) {
-        throw new Error('Name is required');
-    }
-    
+    const org = document.getElementById('contact-org').value.trim();
+    if (!name) { setError('contact-name', 'Enter a name.'); return null; }
+
     let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\n`;
-    
-    if (phone) {
-        const phoneClean = phone.replace(/[^\d+\-()]/g, '');
-        vcard += `TEL:${phoneClean}\n`;
-    }
-    
-    if (email) {
-        vcard += `EMAIL:${email}\n`;
-    }
-    
-    if (organization) {
-        vcard += `ORG:${organization}\n`;
-    }
-    
+    if (phone) vcard += `TEL:${cleanPhone(phone)}\n`;
+    if (email) vcard += `EMAIL:${email}\n`;
+    if (org) vcard += `ORG:${org}\n`;
     vcard += 'END:VCARD';
-    
-    return vcard;
-}
 
-// Function to generate Image QR data
-function generateImageQRData() {
-    const imageUrl = document.getElementById('image-url').value.trim();
-    const altText = document.getElementById('image-alt').value.trim();
-    
-    if (!imageUrl) {
-        throw new Error('Image URL is required');
-    }
-    
-    // Add https:// if no protocol is specified
-    let url = imageUrl;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
-    }
-    
-    // For QR codes, we should use the URL directly to avoid length issues
-    // The alternative text can be stored separately if needed
-    return url;
-}
+    return { data: vcard, caption: `Contact · ${name}` };
+  },
 
-// Function to generate Text QR data
-function generateTextQRData() {
+  image() {
+    let url = document.getElementById('image-url').value.trim();
+    const alt = document.getElementById('image-alt').value.trim();
+    if (!url) { setError('image-url', 'Enter an image URL.'); return null; }
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); } catch { setError('image-url', "That doesn't look like a valid URL."); return null; }
+    return { data: url, caption: alt || url };
+  },
+
+  text() {
     const text = document.getElementById('text-input').value.trim();
-    
-    if (!text) {
-        throw new Error('Text is required');
-    }
-    
-    return text;
+    if (!text) { setError('text-input', 'Enter some text.'); return null; }
+    return { data: text, caption: text.length > 60 ? text.slice(0, 57) + '…' : text };
+  },
+};
+
+/* ---------- Generate ---------- */
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearErrors();
+
+  const result = builders[activeType]();
+  if (!result) { focusFirstInvalid(); return; }
+
+  await renderQr(result.data, result.caption);
+});
+
+async function renderQr(data, caption) {
+  qrCodeContainer.innerHTML = '';
+  qrCodeContainer.classList.remove('is-scanned');
+
+  if (typeof QRCode === 'undefined') {
+    qrCodeContainer.innerHTML = `<p class="label__placeholder">The QR engine didn't load. Refresh the page and try again.</p>`;
+    qrCaption.textContent = '';
+    resultActions.hidden = true;
+    console.error('QRCode library is not defined — vendor-qrcode.js may have failed to load.');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  qrCodeContainer.appendChild(canvas);
+
+  try {
+    await QRCode.toCanvas(canvas, data, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 480,
+      color: { dark: '#14171a', light: '#f2efe9' },
+    });
+  } catch (err) {
+    qrCodeContainer.innerHTML = `<p class="label__placeholder">Couldn't fit that much data into a code. Try shortening it.</p>`;
+    qrCaption.textContent = '';
+    resultActions.hidden = true;
+    console.error('QR generation failed:', err);
+    return;
+  }
+
+  currentCanvas = canvas;
+  currentData = data;
+  qrCaption.textContent = caption;
+  resultActions.hidden = false;
+  resultActions.classList.remove('is-copied');
+
+  // Retrigger the scan-line reveal.
+  requestAnimationFrame(() => qrCodeContainer.classList.add('is-scanned'));
 }
 
-// Function to display QR code
-function displayQRCode(data) {
-    // Clear previous QR code
-    qrCodeContainer.innerHTML = '';
-    
-    // Create QR code using qrcode.js library with optimized settings
-    try {
-        const qrCode = new QRCode(qrCodeContainer, {
-            text: data,
-            width: 256,
-            height: 256,
-            colorDark: '#000000',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M  // Medium error correction for better data capacity
-        });
-        
-        // Show the QR result section
-        qrResult.style.display = 'block';
-        
-        // Store the QR code image by converting the QR code to a data URL
-        setTimeout(() => {
-            currentQrImage = convertQRCodeToImageData();
-        }, 100);
-        
-    } catch (error) {
-        console.error('QR Code generation failed:', error);
-        qrCodeContainer.innerHTML = `<p style="color: red;">Error generating QR code. Please try again.</p>`;
-        qrResult.style.display = 'block';
-    }
-}
+/* ---------- Download ---------- */
+downloadBtn.addEventListener('click', () => {
+  if (!currentCanvas) return;
+  const link = document.createElement('a');
+  link.href = currentCanvas.toDataURL('image/png');
+  link.download = `qr-${activeType}-${Date.now()}.png`;
+  link.click();
+});
 
-// Function to convert QR code to image data
-function convertQRCodeToImageData() {
-    const qrCodeElement = qrCodeContainer.querySelector('canvas');
-    if (qrCodeElement) {
-        return qrCodeElement.toDataURL('image/png');
-    }
-    
-    // Fallback: create a simple QR code representation
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 200;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 200, 200);
-    ctx.fillStyle = 'black';
-    ctx.fillRect(50, 50, 100, 100);
-    return canvas.toDataURL('image/png');
-}
+/* ---------- Copy raw data ---------- */
+copyBtn.addEventListener('click', async () => {
+  if (!currentData) return;
+  try {
+    await navigator.clipboard.writeText(currentData);
+  } catch {
+    // Fallback for browsers without Clipboard API access.
+    const ta = document.createElement('textarea');
+    ta.value = currentData;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  resultActions.classList.add('is-copied');
+  const original = copyBtn.textContent;
+  copyBtn.textContent = 'Copied';
+  setTimeout(() => {
+    copyBtn.textContent = original;
+    resultActions.classList.remove('is-copied');
+  }, 1600);
+});
 
-// Function to download QR code
-function downloadQRCode() {
-    if (!currentQrImage) {
-        alert('No QR code to download. Please generate one first.');
-        return;
-    }
-
-    const link = document.createElement('a');
-    link.href = currentQrImage;
-    link.download = `qr_code_${new Date().getTime()}.png`;
-    link.click();
-}
+/* ---------- Init ---------- */
+setActiveType('wifi');

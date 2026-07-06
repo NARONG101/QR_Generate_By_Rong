@@ -1,158 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Generator</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Studio — Encode anything into a scannable label</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>QR Code Generator</h1>
-        
-        <div id="qr-tools">
-            <div class="qr-type-selector">
-            <label for="qr-type">Select QR Code Type:</label>
-            <select id="qr-type">
-                <option value="wifi">Wi-Fi Credentials</option>
-                <option value="url">URL</option>
-                <option value="phone">Phone Number</option>
-                <option value="email">Email Address</option>
-                <option value="sms">SMS</option>
-                <option value="contact">Contact Information</option>
-                <option value="image">Image URL</option>
-                <option value="text">Plain Text</option>
-            </select>
+
+<div class="app">
+
+  <header class="app__header">
+    <span class="app__eyebrow">QR STUDIO — 01001100</span>
+    <h1>Encode anything into a scannable label</h1>
+    <p class="app__sub">Pick a data type, fill it in, print a code that opens it.</p>
+  </header>
+
+  <div class="app__body">
+
+    <nav class="type-rail" role="tablist" aria-label="QR code data type">
+      <button class="type-tab is-active" role="tab" aria-selected="true" data-type="wifi" id="tab-wifi" aria-controls="section-wifi">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M2 7.5C6.5 3 13.5 3 18 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 10.8C7.8 8 12.2 8 15 10.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7.8 14C9 12.8 11 12.8 12.2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="16.6" r="1" fill="currentColor"/></svg>
+        <span>Wi&#8209;Fi</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="url" id="tab-url" aria-controls="section-url">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="7.2" width="9" height="5.6" rx="2.8" transform="rotate(-20 7 10)" stroke="currentColor" stroke-width="1.6"/><rect x="8.5" y="7.2" width="9" height="5.6" rx="2.8" transform="rotate(-20 13 10)" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>URL</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="phone" id="tab-phone" aria-controls="section-phone">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M5 3h2.3l1 3.3-1.6 1.4c.9 2 2.6 3.7 4.6 4.6l1.4-1.6 3.3 1v2.3c0 1-.8 1.7-1.8 1.6C9 15 5 11 4.4 6.8 4.3 5.8 4 4 5 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span>Phone</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="email" id="tab-email" aria-controls="section-email">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5" width="15" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 5.8 10 11l7-5.2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span>Email</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="sms" id="tab-sms" aria-controls="section-sms">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M2.5 5.5h15v8h-9.2L5 16v-2.5H2.5v-8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 8.6h9M5.5 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span>SMS</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="contact" id="tab-contact" aria-controls="section-contact">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7.6" cy="9" r="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M4.6 13.6c.6-1.7 2-2.6 3-2.6s2.4.9 3 2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12.6 8.4h3M12.6 10.6h3M12.6 12.8h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Contact</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="image" id="tab-image" aria-controls="section-image">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="8.2" r="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M3.2 14.5 7.5 10l3 2.8 2.2-2 3.6 3.7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span>Image</span>
+      </button>
+      <button class="type-tab" role="tab" aria-selected="false" data-type="text" id="tab-text" aria-controls="section-text">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 9.5h13M3.5 13.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Text</span>
+      </button>
+    </nav>
+
+    <main class="workspace">
+
+      <form class="form-panel" id="qr-form" novalidate>
+
+        <div class="form-section is-active" id="section-wifi" data-section="wifi" role="tabpanel" aria-labelledby="tab-wifi">
+          <h2>Wi&#8209;Fi credentials</h2>
+          <p class="form-section__hint">Scanning connects the device to this network automatically.</p>
+          <div class="field">
+            <label for="wifi-ssid">Network name (SSID)</label>
+            <input type="text" id="wifi-ssid" autocomplete="off">
+            <span class="field__error" id="err-wifi-ssid"></span>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="wifi-auth">Security</label>
+              <select id="wifi-auth">
+                <option value="WPA">WPA / WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="NONE">Open (none)</option>
+              </select>
+            </div>
+            <div class="field" id="wifi-password-field">
+              <label for="wifi-password">Password</label>
+              <input type="password" id="wifi-password" autocomplete="off">
+              <span class="field__error" id="err-wifi-password"></span>
+            </div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="wifi-hidden">
+            <span class="toggle__track"><span class="toggle__thumb"></span></span>
+            Network is hidden
+          </label>
         </div>
-        
-        <div class="form-container">
-            <!-- Wi-Fi Form -->
-            <div id="wifi-form" class="form-section">
-                <h2>Wi-Fi Credentials</h2>
-                <div class="form-group">
-                    <label for="wifi-ssid">SSID (Network Name):</label>
-                    <input type="text" id="wifi-ssid" required>
-                </div>
-                <div class="form-group">
-                    <label for="wifi-auth">Authentication:</label>
-                    <select id="wifi-auth">
-                        <option value="WPA">WPA</option>
-                        <option value="WEP">WEP</option>
-                        <option value="NONE">None</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="wifi-password">Password:</label>
-                    <input type="password" id="wifi-password">
-                </div>
-                <div class="form-group">
-                    <label for="wifi-hidden">Hidden SSID:</label>
-                    <input type="checkbox" id="wifi-hidden">
-                </div>
-            </div>
-            
-            <!-- URL Form -->
-            <div id="url-form" class="form-section" style="display: none;">
-                <h2>URL</h2>
-                <div class="form-group">
-                    <label for="url-input">Enter URL:</label>
-                    <input type="url" id="url-input" placeholder="https://example.com" required>
-                </div>
-            </div>
-            
-            <!-- Phone Form -->
-            <div id="phone-form" class="form-section" style="display: none;">
-                <h2>Phone Number</h2>
-                <div class="form-group">
-                    <label for="phone-input">Enter Phone Number:</label>
-                    <input type="tel" id="phone-input" placeholder="+1234567890" required>
-                </div>
-            </div>
-            
-            <!-- Email Form -->
-            <div id="email-form" class="form-section" style="display: none;">
-                <h2>Email Address</h2>
-                <div class="form-group">
-                    <label for="email-address">Email Address:</label>
-                    <input type="email" id="email-address" required>
-                </div>
-                <div class="form-group">
-                    <label for="email-subject">Subject (optional):</label>
-                    <input type="text" id="email-subject">
-                </div>
-                <div class="form-group">
-                    <label for="email-body">Message (optional):</label>
-                    <textarea id="email-body"></textarea>
-                </div>
-            </div>
-            
-            <!-- SMS Form -->
-            <div id="sms-form" class="form-section" style="display: none;">
-                <h2>SMS</h2>
-                <div class="form-group">
-                    <label for="sms-phone">Phone Number:</label>
-                    <input type="tel" id="sms-phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="sms-message">Message (optional):</label>
-                    <textarea id="sms-message"></textarea>
-                </div>
-            </div>
-            
-            <!-- Contact Form -->
-            <div id="contact-form" class="form-section" style="display: none;">
-                <h2>Contact Information</h2>
-                <div class="form-group">
-                    <label for="contact-name">Full Name:</label>
-                    <input type="text" id="contact-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="contact-phone">Phone Number (optional):</label>
-                    <input type="tel" id="contact-phone">
-                </div>
-                <div class="form-group">
-                    <label for="contact-email">Email Address (optional):</label>
-                    <input type="email" id="contact-email">
-                </div>
-                <div class="form-group">
-                    <label for="contact-org">Organization (optional):</label>
-                    <input type="text" id="contact-org">
-                </div>
-            </div>
-            
-            <!-- Image Form -->
-            <div id="image-form" class="form-section" style="display: none;">
-                <h2>Image URL</h2>
-                <div class="form-group">
-                    <label for="image-url">Image URL:</label>
-                    <input type="url" id="image-url" placeholder="https://example.com/image.jpg" required>
-                </div>
-                <div class="form-group">
-                    <label for="image-alt">Alternative Text (optional):</label>
-                    <input type="text" id="image-alt" placeholder="Description of the image">
-                </div>
-            </div>
-            
-            <!-- Text Form -->
-            <div id="text-form" class="form-section" style="display: none;">
-                <h2>Plain Text</h2>
-                <div class="form-group">
-                    <label for="text-input">Enter Text:</label>
-                    <textarea id="text-input" required></textarea>
-                </div>
-            </div>
+
+        <div class="form-section" id="section-url" data-section="url" role="tabpanel" aria-labelledby="tab-url" hidden>
+          <h2>Website link</h2>
+          <p class="form-section__hint">Opens directly in the browser — https:// is added automatically.</p>
+          <div class="field">
+            <label for="url-input">URL</label>
+            <input type="text" id="url-input" placeholder="example.com/menu" autocomplete="off">
+            <span class="field__error" id="err-url-input"></span>
+          </div>
         </div>
-        
-        <button id="generate-btn" class="generate-btn">Generate QR Code</button>
-        
-        <div class="qr-result" style="display: none;">
-            <h2>Your QR Code</h2>
-            <div id="qr-code"></div>
-            <button id="download-btn" class="download-btn">Download QR Code</button>
+
+        <div class="form-section" id="section-phone" data-section="phone" role="tabpanel" aria-labelledby="tab-phone" hidden>
+          <h2>Phone number</h2>
+          <p class="form-section__hint">Scanning starts a call to this number.</p>
+          <div class="field">
+            <label for="phone-input">Phone number</label>
+            <input type="tel" id="phone-input" placeholder="+1 555 123 4567" autocomplete="off">
+            <span class="field__error" id="err-phone-input"></span>
+          </div>
         </div>
-    </div>
-    
-    <script src="script.js"></script>
+
+        <div class="form-section" id="section-email" data-section="email" role="tabpanel" aria-labelledby="tab-email" hidden>
+          <h2>Email address</h2>
+          <p class="form-section__hint">Opens a pre-filled message in the scanner's mail app.</p>
+          <div class="field">
+            <label for="email-address">Recipient</label>
+            <input type="email" id="email-address" autocomplete="off">
+            <span class="field__error" id="err-email-address"></span>
+          </div>
+          <div class="field">
+            <label for="email-subject">Subject <span class="field__optional">optional</span></label>
+            <input type="text" id="email-subject" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="email-body">Message <span class="field__optional">optional</span></label>
+            <textarea id="email-body"></textarea>
+          </div>
+        </div>
+
+        <div class="form-section" id="section-sms" data-section="sms" role="tabpanel" aria-labelledby="tab-sms" hidden>
+          <h2>SMS message</h2>
+          <p class="form-section__hint">Opens a pre-filled text message thread.</p>
+          <div class="field">
+            <label for="sms-phone">Phone number</label>
+            <input type="tel" id="sms-phone" placeholder="+1 555 123 4567" autocomplete="off">
+            <span class="field__error" id="err-sms-phone"></span>
+          </div>
+          <div class="field">
+            <label for="sms-message">Message <span class="field__optional">optional</span></label>
+            <textarea id="sms-message"></textarea>
+          </div>
+        </div>
+
+        <div class="form-section" id="section-contact" data-section="contact" role="tabpanel" aria-labelledby="tab-contact" hidden>
+          <h2>Contact card</h2>
+          <p class="form-section__hint">Saves straight into the scanner's contacts.</p>
+          <div class="field">
+            <label for="contact-name">Full name</label>
+            <input type="text" id="contact-name" autocomplete="off">
+            <span class="field__error" id="err-contact-name"></span>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="contact-phone">Phone <span class="field__optional">optional</span></label>
+              <input type="tel" id="contact-phone" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="contact-email">Email <span class="field__optional">optional</span></label>
+              <input type="email" id="contact-email" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="contact-org">Organization <span class="field__optional">optional</span></label>
+            <input type="text" id="contact-org" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-section" id="section-image" data-section="image" role="tabpanel" aria-labelledby="tab-image" hidden>
+          <h2>Image link</h2>
+          <p class="form-section__hint">Opens the image directly — best for a link you already have hosted somewhere.</p>
+          <div class="field">
+            <label for="image-url">Image URL</label>
+            <input type="text" id="image-url" placeholder="example.com/photo.jpg" autocomplete="off">
+            <span class="field__error" id="err-image-url"></span>
+          </div>
+          <div class="field">
+            <label for="image-alt">Caption on the label <span class="field__optional">optional</span></label>
+            <input type="text" id="image-alt" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-section" id="section-text" data-section="text" role="tabpanel" aria-labelledby="tab-text" hidden>
+          <h2>Plain text</h2>
+          <p class="form-section__hint">Shows this text as-is when scanned. No character limit worth worrying about.</p>
+          <div class="field">
+            <label for="text-input">Text</label>
+            <textarea id="text-input"></textarea>
+            <span class="field__error" id="err-text-input"></span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary" id="generate-btn">Generate QR code</button>
+        </div>
+      </form>
+
+      <aside class="result-panel">
+        <div class="label" id="label" aria-live="polite">
+          <div class="label__perforation" aria-hidden="true"></div>
+          <div class="label__qr" id="qr-code">
+            <p class="label__placeholder">Your code will print here</p>
+          </div>
+          <p class="label__caption" id="qr-caption"></p>
+        </div>
+        <div class="result-actions" id="result-actions" hidden>
+          <button type="button" class="btn btn--ghost" id="download-btn">Download PNG</button>
+          <button type="button" class="btn btn--ghost" id="copy-btn">Copy data</button>
+        </div>
+      </aside>
+
+    </main>
+  </div>
+</div>
+
+<script src="vendor-qrcode.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
