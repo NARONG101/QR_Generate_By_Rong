@@ -29,11 +29,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Prepare _site directory
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r docs _site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload only the docs directory
-          path: './docs'
+          path: './_site'
 
   # Deployment job
   deploy:
